@@ -96,7 +96,17 @@ const Mutation = new GraphQLObjectType({
   },
 });
 
+const Subscription = new GraphQLObjectType({
+  name: "Subscription",
+  fields: {
+    whoWon{
+      
+    }
+  }
+});
+
 export default new GraphQLSchema({
   query: Query,
   mutation: Mutation,
+  subscription: Subscription,
 });
