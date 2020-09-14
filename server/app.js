@@ -9,7 +9,7 @@ import schema from "../schema/schema.js";
 dotenv.config();
 
 const app = express();
-const PORT = 4444;
+const PORT = process.env.PORT | 4444;
 
 app.use(cors());
 
