@@ -7,16 +7,27 @@ import graphql from "graphql";
 import transport from "subscriptions-transport-ws";
 import cors from "cors";
 
+import { subscribtionSchema } from "../schema/subscriptions.js";
 import schema from "../schema/schema.js";
 
 dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT | 4444;
+const WS_PORT = process.env.WS_PORT| 4499;
 const { subscribe, execute } = graphql;
 const { SubscriptionServer } = transport;
 
 app.use(cors());
+
+const ws = createServer((req, res) => {
+  res.writeHead(400);
+  res.end();
+});
+
+ws.listen(WS_PORT, () => {
+  console.log(`Websocket work! Go to ${WS_PORT}`);
+});
 
 app.use("/graphql", graphqlHTTP.graphqlHTTP({ schema, graphiql: true }));
 
@@ -31,16 +42,16 @@ async function start() {
     });
 
     server.listen(PORT, () => {
-      console.log("Server work!");
+      console.log(`Server work! Go to http://localhost:${PORT}/graphql`);
       new SubscriptionServer(
         {
           execute,
           subscribe,
-          schema,
+          subscribtionSchema,
         },
         {
-          server: server,
-          path: "/subscribtions",
+          server: ws,
+          path: "/graphql",
         }
       );
     });

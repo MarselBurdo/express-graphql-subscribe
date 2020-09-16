@@ -13,6 +13,7 @@ const {
 
 import Team from "../models/team.js";
 import Game from "../models/game.js";
+import { pubsub } from "./subscriptions.js";
 
 const TeamType = new GraphQLObjectType({
   name: "Team",
@@ -55,8 +56,9 @@ const Query = new GraphQLObjectType({
     },
     games: {
       type: new GraphQLList(GameType),
-      resolve(parent, args) {
-        return Game.find({});
+      async resolve(parent, args) {
+        pubsub.publish("allGames", { addGames: await Game.find({}) });
+        return await Game.find({});
       },
     },
   },
@@ -68,12 +70,12 @@ const Mutation = new GraphQLObjectType({
     addGame: {
       type: GameType,
       args: {
-        teams: { type: new GraphQLList(GraphQLString) },
+        status: { type: GraphQLString },
         pair: { type: GraphQLInt },
       },
-      resolve(parent, { teams, pair }) {
+      resolve(parent, { status, pair }) {
         const game = Game.create({
-          teams,
+          status,
           pair,
         });
         return game;
@@ -96,17 +98,7 @@ const Mutation = new GraphQLObjectType({
   },
 });
 
-const Subscription = new GraphQLObjectType({
-  name: "Subscription",
-  fields: {
-    whoWon{
-      
-    }
-  }
-});
-
 export default new GraphQLSchema({
   query: Query,
   mutation: Mutation,
-  subscription: Subscription,
 });
